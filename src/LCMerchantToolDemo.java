@@ -16,10 +16,12 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.CallableStatement;
@@ -51,7 +53,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -81,6 +85,8 @@ import org.apache.http.params.HttpParams;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import beartool.MD5;
+
 import com.google.common.base.Charsets;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -88,11 +94,17 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
 import model.Sheet_Fraud_By_Order;
 
+import com.javamex.classmexer.MemoryUtil;
+import com.lanecrawford.secure.TripleDES;
 import com.lanecrawford.oto.oopg.client.getegcholdaudit.PaymentServiceLocator;
 
+import beartool.MD5;
 import service.testService;
 import service.Impl.testServiceImpl;
 import task.linkTestTask;
@@ -107,6 +119,7 @@ import model.ArchiveRecord;
 import model.BaseModel;
 import model.ColorObject;
 import model.FraudCheckContent;
+import model.Fruit;
 import model.GWPRuleMask;
 import model.GWPRuleRequest;
 import model.GiftResult;
@@ -121,15 +134,21 @@ import model.ProductSortContent;
 import model.RetrieveToLocByAtgOrderIdRequest;
 import model.RetrieveToLocByAtgOrderIdResponse;
 import model.RoleRight;
+import model.User;
 import model.testModel;
 import model.testObject;
 import model.testRequest;
 import model.ItemGWPRule;
+import model.alipay.SingleTradeQueryResponse;
+import model.alipay.mobile.MobileResponse;
+import model.alipay.refund.RefundAsynResponse;
+import model.alipay.refund.RefundResponse;
 import model.gwp.ATG_ORDER_XML;
 import model.gwp.AtgOrderXML;
 import model.gwp.MyXMLFilter;
 import model.gwp.PersonEntity;
 import model.gwp.PrefixRemovalXMLFilter;
+import model.oopg.PaymentChannel;
 import model.productcatalog.Product;
 import model.xml.Customer;
 import model.PurchasedItem;
@@ -143,6 +162,8 @@ import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
@@ -161,6 +182,13 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.DocumentHelper;
+import org.dom4j.Node;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJacksonHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -172,6 +200,7 @@ import java.io.StringReader;
 import javax.xml.bind.*;
 import javax.xml.parsers.*;
 import javax.xml.rpc.ServiceException;
+
 
 public class LCMerchantToolDemo {
 	private static Logger logger = Logger.getLogger(LCMerchantToolDemo.class);
@@ -318,7 +347,7 @@ public class LCMerchantToolDemo {
 		//testOOPGWS(OOPG_WS_URI_UAT_CN);
 		//testTextToInputStreamthenfile();
 	//	testutf2gb();
-		//testdoubledefaultvalue();
+	//	testdoubledefaultvalue();
 		//testRemoveDoubleTailZero();
 		
 		//testchinesecharlength();
@@ -330,9 +359,1873 @@ public class LCMerchantToolDemo {
 		//testmapat();
 		//testTransferResult();
 		//castDoubleToint();
-		stringCompare();
+		//stringCompare();
+		
+		//testString();
+		
+		//testMapArray();
+		
+		//testATGEncodeDecode();
+		//testEncodeDecode();
+		//testEncodeDecode2();
+		
+		//testSpringRestTemplate();
+		
+		//testmd5logicOOPG();
+		//patchnumberwithzeroprefix();
+
+		//testParseArray();
+		//testHash();
+		
+		//testVerifySign();
+		
+		
+//		testXMLParser2();
+//		testbooleancast();
+		
+//		testXMLParserSTQ();
+		
+//		testXMLInDR();
+		
+//		testParseAlipayMobileAsynRes();
+//		testParseAlipayRefundResponse();
+		
+//		testBigdecial();
+//		numberOnlyCheck();
+//		testParseRefundDetail();
+//		testStringSplit2();
+//		convertDoubleToInt();
+		
+
+		//testbatchID();
+		//testremoveprefix();
+//		testIntToDouble();
+		//testConvert108();
+		//testbitwise();
+		
+//		testDoubleAsNull();
+		
+//		testClassCheck();
+//		testPercent();
+		
+		//testdoubledefaultvalue2();
+		
+//		testFruit();
+//		testcastcollectiontolist();
+		
+//		testCaptureHost();
+		
+//		testReplaceSpecialCharAlipayRefund();
+		
+//		testencodeURL();
+//		testnullchecking();
+//		testReplacechar();
+		
+//		testverifyNotifyID();
+//		testRoundDecimalplaces();
+		
+//		testOOME();
+//		testOOMEStringBuffer();
+//		UserOfIntern();//cant trigger oome
+
+//		testOOME3();
+//		testOOME3();
+		
+//		testOOMETwice();
+//		testPhoneModule();
+		
+//		testchecksign();
+//		printascii();
+//		testListString();
+//		testHashset();
+		
+//		testOOPGCalls();
+//		testPlusSignEncode();
+		//testMap();
+		testReadFile();
+	}
+
+	
+	private static Set<String> readFile( String file ) throws IOException {
+	    BufferedReader reader = new BufferedReader( new FileReader (file));
+	    String         line = null;
+	    StringBuilder  stringBuilder = new StringBuilder();
+	    String         ls = System.getProperty("line.separator");
+
+	    Set<String> ret = new HashSet<String>();
+	    
+	    long start = System.currentTimeMillis();
+	    try {
+	        while( ( line = reader.readLine() ) != null ) {
+//	            stringBuilder.append( line );
+//	            stringBuilder.append( ls );
+	        	ret.add(line);
+	        }
+
+//	        return stringBuilder.toString();
+	        return ret;
+	    } finally {
+	        reader.close();
+		    long end = System.currentTimeMillis();
+			System.out.println("elapsedTime="+ (end-start) );
+	    }
+	}
+
+	private static void testReadFile(){
+		
+		try {
+			String path = "C:/Users/roychan/git/LCMerChantToolDemo/temp/hkorderid.txt";
+			Set<String> set = readFile(path);
+			System.out.println("set="+ set.size());
+	/*		
+			for(String object : set){
+				System.out.println("object="+ object);
+			}
+		*/	
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private static void testMap(){
+		//1. build a map with key as atg order id, and value as region
+		Map<String,String> orderIdRegion = new HashMap<String,String>();
+
+//		long noBytesBefore = MemoryUtil.memoryUsageOf(orderIdRegion);
+		
+		//2. the map size is about 750 thousand.
+		for(int i = 0; i < 750000; i++){
+			String key = "o" + String.valueOf(i);
+			String value = "HK";//or CN
+			
+			orderIdRegion.put(key, value);
+		}
+		
+
+//		long noBytesAfter = MemoryUtil.memoryUsageOf(orderIdRegion);
+		
+		System.out.println("testMap()"
+		+", orderIdRegion.size = "+orderIdRegion.size()
+//		+" ,noBytesBefore = "+noBytesBefore
+//		+", noBytesAfter = "+noBytesAfter
+		);
 	}
 	
+	private static void testPlusSignEncode(){
+		String test;
+		try {
+			System.out.println(java.net.URLEncoder.encode("Hello World", "UTF-8").replace("+", "%20"));
+			
+			
+			String text = "Hello World";
+			String encodeText = java.net.URLEncoder.encode(text, "UTF-8");
+			System.out.println(text);
+			System.out.println(encodeText);
+			
+			String text2 = "Hello+World";
+			String encodeText2 = java.net.URLEncoder.encode(text2, "UTF-8");
+			System.out.println(text2);
+			System.out.println(encodeText2);
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static void testHashset() {
+		int initialCapacity = 3;
+		HashSet<String> refundProcess = new HashSet<String>(initialCapacity);
+		System.out.println("refundProcess = " + refundProcess + ",initialCapacity =" + initialCapacity);
+
+		refundProcess.add("1");
+		refundProcess.add("2");
+		refundProcess.add("3");
+		System.out.println("refundProcess = " + refundProcess + ",initialCapacity =" + initialCapacity);
+
+		refundProcess.add("4");
+		System.out.println("refundProcess = " + refundProcess + ",initialCapacity =" + initialCapacity);
+		refundProcess.remove("5");
+		System.out.println("refundProcess = " + refundProcess + ",initialCapacity =" + initialCapacity);
+	}
+	
+	private static void testListString () {
+		List<String> ls;
+		String s;
+		
+		ls = new ArrayList();
+	}
+	private static void testchecksign(){
+		int c = 2713;
+		int d = 2714;
+		int e = 10102;
+		//		int f = 237b;
+		String sc = Character.toString((char)c);
+		String sd = Character.toString((char)d);
+		String se = Character.toString((char)e);
+		System.out.println("c = "+c + ",s ="+sc);
+		System.out.println("d = "+d + ",s ="+sd);
+		System.out.println("e = "+e + ",s ="+se);
+	}
+	
+	private static void printascii(){
+		   for (int c=0; c<25500; c++) {
+			    System.out.println(c + ": " + (char)c);
+			   } 
+	}
+	
+	private static void testPhoneModule(){
+		String mobileNumber = "85263588242";
+		PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+		
+		
+		PhoneNumber phoneNumber = null;
+		try {
+			if(mobileNumber!=null && !mobileNumber.startsWith("+"))
+			{
+				mobileNumber = "+" + mobileNumber;
+			}
+			phoneNumber = phoneUtil.parse(mobileNumber,"");
+		} catch (NumberParseException e1) {
+		}
+		String countryCode = "";
+		if(phoneNumber!=null)
+			countryCode = phoneNumber.getCountryCode()+ "";
+		
+		
+		System.out.println("mobileNumber = "+mobileNumber+", phoneNumber = "+phoneNumber+", countryCode = "+countryCode);
+	}
+	
+	private static void testOOMETwice(){
+		System.out.println("testOOMETwice aaa");
+		try{
+			testOOME();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("testOOMETwice bbb");
+		try{
+			testOOME();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println("testOOMETwice ccc");
+	}
+	
+	private static void UserOfIntern() {
+
+        Random random = new Random();
+        System.out.println(random.nextLong());
+        while (true) {
+            String s = String.valueOf(random.nextLong());
+            //s = s.intern();
+            System.out.println("s="+s);
+        }
+
+	}
+	
+	private static void testOOMEStringBuffer(){
+		StringBuffer test = new StringBuffer(" test ");
+		while (true) {
+			test.append("a");
+		    System.out.println("test="+test);
+		}
+	}
+	
+	private static void testOOME() throws Exception{
+	    Map map = System.getProperties();
+	    Random r = new Random();
+	    while (true) {
+	    	int temp = r.nextInt();
+	      map.put(temp, "value");
+	      System.out.println(temp);
+	    }
+	}
+	
+	/**
+	 * without intern
+	 */
+	private static void testOOME2(){
+	    Map map = System.getProperties();
+	    Random r = new Random();
+	    while (true) {
+	    	String temp = String.valueOf(r.nextLong());
+			map.put(temp, "value");
+			System.out.println(temp);
+	    }
+	}
+
+	/**
+	 * with intern
+	 */
+	private static void testOOME3(){
+	    Map map = System.getProperties();
+	    Random r = new Random();
+	    while (true) {
+	    	String temp = String.valueOf(r.nextLong());
+	    	temp = temp.intern();
+			map.put(temp, "value");
+			System.out.println(temp);
+	    }
+	}
+	
+	private static void testRoundDecimalplaces(){
+		double test = 0.3999999999999999d;
+		int pRoundingDecimalPlaces2 = 2;
+
+		double ret2 = roundatg(test,pRoundingDecimalPlaces2);
+		System.out.println("testRoundDecimalplaces()"+", test="+test + ", pRoundingDecimalPlaces2="+pRoundingDecimalPlaces2+ ", ret2="+ret2);
+
+		int pRoundingDecimalPlaces1 = 1;
+		double ret1 = roundatg(test,pRoundingDecimalPlaces1);
+		System.out.println("testRoundDecimalplaces()"+", test="+test + ", pRoundingDecimalPlaces1="+pRoundingDecimalPlaces1+ ", ret1="+ret1);
+		
+		int pRoundingDecimalPlaces0 = 0;
+		double ret0 = roundatg(test,pRoundingDecimalPlaces0);
+		System.out.println("testRoundDecimalplaces()"+", test="+test + ", pRoundingDecimalPlaces0="+pRoundingDecimalPlaces0+ ", ret0="+ret0);
+	}
+
+	public static double roundatg(double pNumber, int pRoundingDecimalPlaces) {
+		BigDecimal bd = new BigDecimal(Double.toString(pNumber));
+		bd = bd.setScale(pRoundingDecimalPlaces, 4);
+		return bd.doubleValue();
+	}
+
+	private static void testverifyNotifyID(){
+		String notifyId = null;
+//		String notifyId = "0";
+//		String notifyId = "1";
+		int maxRetry = 3;
+		long retryTimeGap = 3000;
+		System.out.println("testverifyNotifyID()"+", notifyId="+notifyId + ", maxRetry="+maxRetry+ ", retryTimeGap="+retryTimeGap);
+		boolean ret = verifyNotifyID(notifyId,maxRetry,retryTimeGap);
+
+		System.out.println("testverifyNotifyID()"+", notifyId="+notifyId + ", maxRetry="+maxRetry+ ", retryTimeGap="+retryTimeGap + ", ret="+ret);
+	}
+	
+	private static boolean verifyNotifyID(String notifyId) throws Exception{
+		boolean ret = false;
+		System.out.println("notifyId="+notifyId);
+		if(null == notifyId || notifyId.isEmpty()){
+			throw new Exception("null or empty");
+		} else if("0".equalsIgnoreCase(notifyId)) {
+			ret = true;
+		} else if("1".equalsIgnoreCase(notifyId)) {
+			ret = false;
+		} else {
+			
+		}
+		System.out.println("notifyId="+notifyId + ", ret="+ret);
+		return ret;
+	}
+	
+	private  static boolean verifyNotifyID(String notifyId, int maxRetry, long retryMillis){
+		boolean ret = false;
+		System.out.println("notifyId="+notifyId + ", maxRetry="+maxRetry+ ", retryMillis="+retryMillis);
+		for(int index = 1; index <= maxRetry; index++){
+			try{
+				System.out.println("time="+System.currentTimeMillis() + ", notifyId="+notifyId + ", maxRetry="+maxRetry+ ", retryMillis="+retryMillis+ ", index="+index);
+				ret = verifyNotifyID(notifyId);
+				
+				break;
+			} catch (Exception e){
+				e.printStackTrace();
+				if(index<maxRetry){
+					try {
+						Thread.sleep(retryMillis * index);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
+
+		System.out.println("notifyId="+notifyId + ", maxRetry="+maxRetry+ ", retryMillis="+retryMillis + ", ret="+ret);
+		return ret;
+	}
+	
+	private static void testReplacechar(){
+		//Reuest.getURI()=https://mapi.alipay.com/gateway.do?_input_charset=utf-8&batch_no=20150902055736407&batch_num=2&detail_data=2015082600001000760060070684%5E1%5EAccepted%20-%20Defective#2015082600001000760060070700%5E1%5EAccepted%20-%20Defective&notify_url=https://secure.uat.lanecrawford.com.cn/checkout/asyncRefundHandlers.jsp&partner=2088711824364505&refund_date=2015-09-02%2005:57:36&service=refund_fastpay_by_platform_nopwd&sign_type=MD5&sign=e8249bf27718cbb97bd84632f96ff667
+		
+		String url = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8&batch_no=20150902055736407&batch_num=2&detail_data=2015082600001000760060070684%5E1%5EAccepted%20-%20Defective#2015082600001000760060070700%5E1%5EAccepted%20-%20Defective&notify_url=https://secure.uat.lanecrawford.com.cn/checkout/asyncRefundHandlers.jsp&partner=2088711824364505&refund_date=2015-09-02%2005:57:36&service=refund_fastpay_by_platform_nopwd&sign_type=MD5&sign=e8249bf27718cbb97bd84632f96ff667";
+		//String url = "asdasd#asdasd";
+
+		String encodedURL = escapeChar(url,"#","%23");
+		System.out.println("url="+url);
+		System.out.println("encodedURL="+encodedURL);
+		
+		try {
+			URI uriOld = new URI(url);
+
+			System.out.println("uriOld="+uriOld);
+	    	System.out.println("uriOld="+uriOld);
+	    	System.out.println("uriOld.toString()="+uriOld.toString());
+	    	System.out.println("uriOld.toASCIIString()="+uriOld.toASCIIString());
+	    	System.out.println("uriOld.getHost()="+uriOld.getHost());
+	    	System.out.println("uriOld.getPath()="+uriOld.getPath());
+	    	System.out.println("uriOld.getPort()="+uriOld.getPort());
+	    	System.out.println("uriOld.getAuthority()="+uriOld.getAuthority());
+	    	System.out.println("uriOld.getFragment()="+uriOld.getFragment());
+	    	
+	    	System.out.println("uriOld.getQuery()="+uriOld.getQuery());
+	    	System.out.println("uriOld.getRawAuthority()="+uriOld.getRawAuthority());
+	    	System.out.println("uriOld.getRawFragment()="+uriOld.getRawFragment());
+	    	System.out.println("uriOld.getRawPath()="+uriOld.getRawPath());
+	    	System.out.println("uriOld.getRawQuery()="+uriOld.getRawQuery());
+	    	
+	    	System.out.println("uriOld.getRawSchemeSpecificPart()="+uriOld.getRawSchemeSpecificPart());
+	    	System.out.println("uriOld.getRawUserInfo()="+uriOld.getRawUserInfo());
+	    	System.out.println("uriOld.getScheme)="+uriOld.getScheme());
+	    	System.out.println("uriOld.getUserInfo()="+uriOld.getUserInfo());
+	    	System.out.println("uriOld.getSchemeSpecificPart()="+uriOld.getSchemeSpecificPart());
+	    	
+			
+			URI uriNew = new URI(escapeChar(uriOld.toString(),"#","%23"));
+			System.out.println("uriNew="+uriNew);
+	    	System.out.println("uriNew.toString()="+uriNew.toString());
+	    	System.out.println("uriNew.toASCIIString()="+uriNew.toASCIIString());
+	    	System.out.println("uriNew.getHost()="+uriNew.getHost());
+	    	System.out.println("uriNew.getPath()="+uriNew.getPath());
+	    	System.out.println("uriNew.getPort()="+uriNew.getPort());
+	    	System.out.println("uriNew.getAuthority()="+uriNew.getAuthority());
+	    	System.out.println("uriNew.getFragment()="+uriNew.getFragment());
+	    	
+	    	System.out.println("uriNew.getQuery()="+uriNew.getQuery());
+	    	System.out.println("uriNew.getRawAuthority()="+uriNew.getRawAuthority());
+	    	System.out.println("uriNew.getRawFragment()="+uriNew.getRawFragment());
+	    	System.out.println("uriNew.getRawPath()="+uriNew.getRawPath());
+	    	System.out.println("uriNew.getRawQuery()="+uriNew.getRawQuery());
+	    	
+	    	System.out.println("uriNew.getRawSchemeSpecificPart()="+uriNew.getRawSchemeSpecificPart());
+	    	System.out.println("uriNew.getRawUserInfo()="+uriNew.getRawUserInfo());
+	    	System.out.println("uriNew.getScheme)="+uriNew.getScheme());
+	    	System.out.println("uriNew.getUserInfo()="+uriNew.getUserInfo());
+	    	System.out.println("uriNew.getSchemeSpecificPart()="+uriNew.getSchemeSpecificPart());
+						
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+    private static String escapeChar(String url , String target, String replacement){
+    	return url.replaceAll(target, replacement);
+    }
+	
+	private  static void testnullchecking(){
+		/*
+		final boolean profileMatchesOrderProfile = profileForOrder.getRepositoryId().equals(getProfileForSession().getRepositoryId());
+		final boolean profileMatchesOrderProfile = 
+				(null != profileForOrder && null != profileForOrder.getRepositoryId() && !profileForOrder.getRepositoryId().isEmpty() 
+				&& null != getProfileForSession() && null != getProfileForSession().getRepositoryId() && !getProfileForSession().getRepositoryId().isEmpty())
+				? profileForOrder.getRepositoryId().equals(getProfileForSession().getRepositoryId())
+				: false;
+				*/
+		
+		User a = null;
+		User b = null;
+		
+		a = new User();
+		a.setName("andy banana");
+		
+		b = new User();
+		b.setName("andy banana");
+		
+
+		System.out.println("User a="+a.toString() + ", User b="+b.toString());
+		
+		final boolean profileMatchesOrderProfile = 
+				(null != a && null != a.getName() && !a.getName().isEmpty() 
+				&& null != b && null != b.getName() && !b.getName().isEmpty())
+				? a.getName().equals(b.getName())
+				: false;
+				
+		System.out.println("profileMatchesOrderProfile="+profileMatchesOrderProfile);
+	}
+	
+	private static void testencodeURL(){
+//		String test = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8&batch_no=20150826102854862&batch_num=2&detail_data=2015082500001000760060003998^1^Incorrect%20Item#2015082500001000760060003906^1^Incorrect Item&notify_url=https://secure.sit.lanecrawford.com.cn/checkout/asyncRefundHandlers.jsp&partner=2088711824364505&refund_date=2015-08-26 10:28:54&service=refund_fastpay_by_platform_nopwd&sign_type=MD5&sign=a786707f9580f6db08052e3ca9da1dc2";
+
+//		String test = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8&batch_no=20150826104753225&batch_num=2&detail_data=2015082500001000760060003998^1^Incorrect Item#2015082500001000760060003906^1^Incorrect Item&notify_url=https://secure.sit.lanecrawford.com.cn/checkout/asyncRefundHandlers.jsp&partner=2088711824364505&refund_date=2015-08-26 10:47:53&service=refund_fastpay_by_platform_nopwd&sign_type=MD5&sign=e42171e19f32fee303b12186c8251833";
+		
+		String host = "https://mapi.alipay.com/gateway.do";
+		String test = "_input_charset=utf-8&batch_no=20150826105437178&batch_num=2&detail_data=2015082500001000760060003998^1^Incorrect Item#2015082500001000760060003906^1^Incorrect Item&notify_url=https://secure.uat.lanecrawford.com.cn/checkout/asyncRefundHandlers.jsp&partner=2088711824364505&refund_date=2015-08-26 10:54:37&service=refund_fastpay_by_platform_nopwd&sign_type=MD5&sign=c4daf10562818a56d97b310c1351b150";
+		
+		try {
+			/*
+			URL url = new URL(test);
+			System.out.println("url.toURI()="+url.toURI());
+			System.out.println("url.toString()="+url.toString());
+			System.out.println("url.toExternalForm()="+url.toExternalForm());
+			*/
+			String ret = URLEncoder.encode(test,"UTF-8");
+			String url = host + "?" + ret;
+			System.out.println("host="+host);
+			System.out.println("test="+test);
+			System.out.println("ret="+ret);
+			System.out.println("url="+url);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static void testReplaceSpecialCharAlipayRefund(){
+		String test = "abc^def|ghi$jkl#mno";
+		
+		String ret = test.replace("^", "").replace("|", "").replace("$", "").replace("#", ""); 
+
+		System.out.println("test="+test);
+		System.out.println("ret="+ret);
+	}
+	
+	private static void testCaptureHost(){
+/*
+		https://secure.uat.lanecrawford.com.cn/checkout/resulthandler.jsp
+		http://www.sitneo.lanecrawford.com.cn/checkout/resulthandler.jsp
+		http://www.sitneo.lanecrawford.com.cn/checkout/resulthandler.jsp
+*/
+		String callbackurlUat = "https://secure.uat.lanecrawford.com.cn/checkout/resulthandler.jsp";
+		String callbackurlSitNeo = "http://www.sitneo.lanecrawford.com.cn/checkout/resulthandler.jsp";
+		String callbackurlci = "http://www.ci.lanecrawford.com.cn/checkout/resulthandler.jsp";
+		
+		try {
+//			printurl(callbackurlUat);
+//			printurl(callbackurlSitNeo);
+			
+/*
+			String hostUAT = getDomainName(callbackurlUat);
+			String hostSITNEO = getDomainName(callbackurlSitNeo);			
+*/
+
+			String hostUAT = getHostWithScheme(callbackurlUat);
+			String hostSITNEO = getHostWithScheme(callbackurlSitNeo);
+			String hostci = getHostWithScheme(callbackurlci);
+			
+
+			System.out.println("callbackurlUat="+callbackurlUat);
+			System.out.println("hostUAT="+hostUAT);
+
+			System.out.println("callbackurlSitNeo="+callbackurlSitNeo);
+			System.out.println("hostSITNEO="+hostSITNEO);
+
+			System.out.println("callbackurlci="+callbackurlci);
+			System.out.println("hostci="+hostci);
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static String getDomainName(String url) throws URISyntaxException {
+	    URI uri = new URI(url);
+	    String domain = uri.getHost();
+	    return domain.startsWith("www.") ? domain.substring(4) : domain;
+	}
+
+	public static String getHostWithScheme(String url) throws URISyntaxException {
+	    URI uri = new URI(url);
+	    String domain = uri.getHost();
+	    String Scheme = uri.getScheme();
+	    return Scheme + "://" + domain;
+	}
+	
+	public static void printurl(String url) throws URISyntaxException {
+	    URI uri = new URI(url);
+	    String getHost = uri.getHost();
+	    String getAuthority = uri.getAuthority();
+	    String getFragment = uri.getFragment();
+	    String getPath = uri.getPath();
+	    String getQuery = uri.getQuery();
+	    String getRawAuthority = uri.getRawAuthority();
+	    String getRawFragment = uri.getRawFragment();
+	    String getRawPath = uri.getRawPath();
+	    String getRawQuery = uri.getRawQuery();
+	    String getRawSchemeSpecificPart = uri.getRawSchemeSpecificPart();
+	    String getRawUserInfo = uri.getRawUserInfo();
+	    String getScheme = uri.getScheme();
+	    String getSchemeSpecificPart = uri.getSchemeSpecificPart();
+	    String getUserInfo = uri.getUserInfo();
+   	    int getPort = uri.getPort();
+
+   	    System.out.println("Host="+getHost);
+		System.out.println("Authority="+getAuthority);
+		System.out.println("Fragment="+getFragment);
+		System.out.println("Path="+getPath);
+		System.out.println("Query="+getQuery);
+		System.out.println("RawAuthority="+getRawAuthority);
+		System.out.println("RawFragment="+getRawFragment);
+		System.out.println("RawPath="+getRawPath);
+		System.out.println("RawQuery="+getRawQuery);
+		System.out.println("RawSchemeSpecificPart="+getRawSchemeSpecificPart);
+		System.out.println("RawSchemeSpecificPart="+getRawSchemeSpecificPart);
+		System.out.println("RawUserInfo="+getRawUserInfo);
+		System.out.println("Scheme="+getScheme);
+		System.out.println("SchemeSpecificPart="+getSchemeSpecificPart);
+		System.out.println("UserInfo="+getUserInfo);
+		System.out.println("Port="+getPort);
+
+	}
+	
+	private static void  testcastcollectiontolist(){
+		Collection<Fruit> fs = new HashSet();
+		Fruit pineappale = new Fruit("Pineapple", "Pineapple description",70.1); 
+		Fruit apple = new Fruit("Apple", "Apple description",100.2); 
+		Fruit orange = new Fruit("Orange", "Orange description",80.3); 
+		Fruit banana = new Fruit("Banana", "Banana description",90.4); 
+		fs.add(pineappale); 
+		fs.add(apple); 
+		fs.add(orange); 
+		fs.add(banana);
+//		List list = new ArrayList(coll);
+		
+		for(Fruit f:fs){
+			System.out.println(f.toString());
+		}
+	
+//		aint working
+//		List<Fruit> l_fs = (List<Fruit>)fs;
+		
+		
+//		it works
+		List<Fruit> l_fs = new ArrayList(fs);
+
+		for(Fruit f:l_fs){
+			System.out.println(f.toString());
+		}
+		
+		return;
+	}
+	
+	private static void testFruit(){
+		
+		
+		Fruit[] fruits = new Fruit[4];
+		 
+		Fruit pineappale = new Fruit("Pineapple", "Pineapple description",70.1); 
+		Fruit apple = new Fruit("Apple", "Apple description",100.2); 
+		Fruit orange = new Fruit("Orange", "Orange description",80.3); 
+		Fruit banana = new Fruit("Banana", "Banana description",90.4); 
+ 
+		fruits[0]=pineappale;
+		fruits[1]=apple;
+		fruits[2]=orange;
+		fruits[3]=banana;
+		
+		for(Fruit f:fruits){
+			System.out.println(f.toString());
+		}
+		
+		Arrays.sort(fruits);
+
+		for(Fruit f:fruits){
+			System.out.println(f.toString());
+		}
+		
+	}
+	
+	private static void testPercent(){
+		int testint = 1;
+		int ret = testint % 3;
+		System.out.println("testint="+testint);
+		System.out.println("ret="+ret);
+		int testint3 = 3;
+		int ret3 = testint3 % 3;
+		System.out.println("testint3="+testint3);
+		System.out.println("ret3="+ret3);
+		
+	}
+	private static void testClassCheck(){
+		Double test = 1.1d;
+		boolean checka = checkPaymentType(test,Double.class);
+		boolean checkb = checkPaymentType(test,Integer.class);
+		System.out.println("checka="+checka);
+		System.out.println("checkb="+checkb);
+	}
+	
+	private static boolean checkPaymentType(Double order, Class<?> c) {
+		boolean ret = false;
+
+		try {
+			if (order.getClass().equals(c)) {
+				ret = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return ret;
+	}
+	private static void testDoubleAsNull(){
+
+		System.out.println("getTestd1()="+getTestd1());
+		setTestd1(null);
+		System.out.println("getTestd1()="+getTestd1());
+		System.out.println("getTestd1()="+getTestd1());
+	}
+	static Double testd1;
+	
+	public static Double getTestd1() {
+		return testd1;
+	}
+	public static void setTestd1(Double testd1) {
+		LCMerchantToolDemo.testd1 = null==testd1?0d:testd1;
+	}
+
+	private static void testbitwise(){
+		int ret = 0;
+	 ret |= 0x8;
+	System.out.println("ret="+ret);
+	
+	}
+	private static void testConvert108(){
+		Date today = new Date();
+		SimpleDateFormat convertFormat = new SimpleDateFormat("hh:mm:ss");
+		String refundBatchNo = convertFormat.format(today);
+		System.out.println("refundBatchNo="+refundBatchNo);
+		System.out.println("today="+today.toString());
+		System.out.println("System.currentTimeMillis()="+System.currentTimeMillis());
+	}
+	
+	private static void testIntToDouble(){
+		int testint = 13499;
+		double castDouble = (double)testint;
+
+		double testDouble = testint / 100;
+		double testCastDouble = castDouble / 100;
+
+		System.out.println("testint="+testint);
+		System.out.println("testDouble="+testDouble);
+		System.out.println("testCastDouble="+testCastDouble);
+		
+		
+		
+		String ret = getTranscationAmountWithFormat(testCastDouble);
+
+		System.out.println("ret="+ret);
+		
+	}
+	
+	public static String getTranscationAmountWithFormat(double testCastDouble) {
+		String ret = null;
+//		String amountFormat = "#.#";
+//		String amountFormat = null;
+//		String amountFormat = "";
+		String amountFormat = "#.##";
+		try{
+			if(null != amountFormat && !amountFormat.isEmpty()){
+				DecimalFormat df = new DecimalFormat(amountFormat);
+				ret = df.format(testCastDouble);
+			}else{
+				ret = String.valueOf(testCastDouble);
+			}
+		}catch(Exception e){
+//			e.printStackTrace();
+		}
+		return ret;
+	}
+	
+	private static void testgetdomain(){
+		String oldurl = "http://www.sitneo.lanecrawford.com.cn/checkout/resulthandler.jsp";
+		String domain = null;
+		
+		
+	}
+	
+	private static void testremoveprefix(){
+		String prefix= "UAT";
+		String order= "UAT123123123";
+		
+		String ordernoprefix = order.replaceFirst(prefix, "");
+		System.out.println("prefix="+prefix);
+		System.out.println("order="+order);
+		System.out.println("ordernoprefix="+ordernoprefix);
+	}
+	private static void testbatchID(){
+		Date today = new Date();
+		SimpleDateFormat batchFormat = new SimpleDateFormat("yyyyMMddhhmmssSSS");
+		String refundBatchNo = batchFormat.format(today);
+		System.out.println("refundBatchNo="+refundBatchNo);
+		System.out.println("today="+today.toString());
+		System.out.println("System.currentTimeMillis()="+System.currentTimeMillis());
+	}
+	private static void convertDoubleToInt(){
+		Double d = new Double(1.23);
+		Double d100 = d * 100;
+		int i = d100.intValue();
+
+		System.out.println("d="+d);
+		System.out.println("d100="+d100);
+		System.out.println("i="+i);
+	}
+	
+	private static void testStringSplit2(){
+		String refundInfoDelimitor = "\\$";
+		String resultDetail= "2015042700001000760049110401^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS";
+		System.out.println("refundInfoDelimitor="+refundInfoDelimitor);
+		System.out.println("resultDetail="+resultDetail);
+		
+//		boolean iscontaindelimitor = resultDetail.contains(refundInfoDelimitor);
+//		System.out.println("iscontaindelimitor="+iscontaindelimitor);
+		
+		String [] resultInfos = resultDetail.split(refundInfoDelimitor);
+		System.out.println("resultInfos.length="+resultInfos.length);
+		
+		
+		for(String resultInfo:resultInfos){
+			System.out.println("resultInfo="+resultInfo);
+		}
+	}
+	
+	private static void testParseRefundDetail(){
+/*		
+		2015042700001000760049110401^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS#2015042700001000760049110581^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS
+		
+		//Split by #
+		2015042700001000760049110401^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS
+		#
+		2015042700001000760049110581^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS
+		
+		//Split by $
+		2015042700001000760049110401^1.00^SUCCESS
+		$
+		cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS
+		
+		//Split by ^
+		2015042700001000760049110401
+		^
+		1.00
+		^
+		SUCCESS
+		
+		cnonlinegroup@lanecrawford.com
+		^
+		2088711824364505
+		^
+		0.01
+		^
+		SUCCESS
+		
+*/		
+		String test = "2015042700001000760049110401^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS#2015042700001000760049110581^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS";
+		System.out.println("test="+test);
+		
+		List<RefundAsynResponse> results = parseRefundDetail(test);
+		System.out.println("results.size()="+results.size());
+		
+		for(RefundAsynResponse result: results){
+			System.out.println("results.toString()="+result.toString());
+		}
+	}
+	
+	private static List<RefundAsynResponse> parseRefundDetail(String resultDetailsInBatch){
+		List<RefundAsynResponse> ret = null;
+		String patchDelimitor = "#";
+		String refundInfoDelimitor = "\\$";
+		String refundResultDelimitor = "\\^";
+		
+		try {
+			String [] resultDetails = resultDetailsInBatch.split(patchDelimitor);
+			
+			ret = new ArrayList<RefundAsynResponse>();
+			for(String resultDetail: resultDetails){
+				String [] resultInfos = resultDetail.split(refundInfoDelimitor);
+				String refundResults = resultInfos[0];
+				String refundMerResults = resultInfos[1];
+
+				String [] refundResultsArray = refundResults.split(refundResultDelimitor);
+				String alipayTraNo = refundResultsArray[0];
+				Double refundAmt = Double.valueOf(refundResultsArray[1]);
+				String refundState = refundResultsArray[2];
+				
+				String [] refundMerResultsArray = refundMerResults.split(refundResultDelimitor);
+				String alipayMerAcc = refundMerResultsArray[0];
+				String alipayMerId = refundMerResultsArray[1];
+				Double refundMerFee = Double.valueOf(refundMerResultsArray[2]);
+				String refundMerState = refundMerResultsArray[3];
+				
+				ret.add(new RefundAsynResponse(alipayTraNo, refundAmt, refundState, alipayMerAcc, alipayMerId, refundMerFee, refundMerState));
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return ret;
+	}
+	
+	private static void testgetpost(){/*
+//		HttpServletRequest request = null;
+		if ("POST".equalsIgnoreCase(request.getMethod())) {
+			
+			        System.out.println( "asyncRefundHandler.jsp post");
+			    StringBuffer sb = new StringBuffer();
+			    BufferedReader bufferedReader = null;
+			    String content = "";
+
+			    try {
+			        //InputStream inputStream = request.getInputStream();
+			        //inputStream.available();
+			        //if (inputStream != null) {
+			        bufferedReader =  request.getReader() ; //new BufferedReader(new InputStreamReader(inputStream));
+			        char[] charBuffer = new char[128];
+			        int bytesRead;
+			        while ( (bytesRead = bufferedReader.read(charBuffer)) != -1 ) {
+			            sb.append(charBuffer, 0, bytesRead);
+			        }
+			        //} else {
+			        //        sb.append("");
+			        //}
+
+			    } catch (IOException ex) {
+			        throw ex;
+			    } finally {
+			        if (bufferedReader != null) {
+			            try {
+			                bufferedReader.close();
+			            } catch (IOException ex) {
+			                throw ex;
+			            }
+			        }
+			    }
+
+			        String    test = sb.toString();
+
+			        System.out.println( "asyncRefundHandler.jsp" + ", test=" + test);
+			}else{
+			        System.out.println( "asyncRefundHandler.jsp not post");
+			}
+*/
+	}
+	
+	private static void numberOnlyCheck(){
+		String tradeNo = "2015031124200354";
+		String regex = "\\d+";
+		
+		if (tradeNo.matches(regex)) {
+			System.out.println("match");
+
+		} else {
+			System.out.println("matchnot");
+
+		}
+	}
+	
+	private static void testBigdecial(){
+		double test = 27.56;
+		BigDecimal test2 =  new BigDecimal(test, MathContext.DECIMAL64);
+		BigDecimal test3 =  new BigDecimal(test, MathContext.DECIMAL32);
+		BigDecimal test4 = BigDecimal.valueOf(test);
+		System.out.println("test="+test);
+		System.out.println("test2="+test2);
+		System.out.println("test3="+test3);
+		System.out.println("test4="+test4);
+		
+		test2 = test2.setScale(8, BigDecimal.ROUND_HALF_UP);
+		System.out.println("test2="+test2);
+		
+	}
+	private static void testParseAlipayRefundResponse(){
+		String xml = null;
+		RefundResponse test = null;
+		try {
+			xml = "<?xml version=\"1.0\" encoding=\"GBK\" ?><alipay><is_success>T</is_success></alipay>";
+			System.out.println(xml);
+			
+			test = (RefundResponse) JABXParser.fromXML(new StringReader(xml), RefundResponse.class);
+			System.out.println(test.toString());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}	
+	private static void testParseAlipayMobileAsynRes(){
+		String xml = null;
+		MobileResponse test = null;
+		try {
+//			xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><notify><payment_type>1</payment_type><subject>901173003</subject><trade_no>2015032500001000760045995663</trade_no><buyer_email>14714348178@163.com</buyer_email><gmt_create>2015-03-25 16:09:36</gmt_create><notify_type>trade_status_sync</notify_type><quantity>1</quantity><out_trade_no>901173003</out_trade_no><notify_time>2015-03-25 16:10:12</notify_time><seller_id>2088711824364505</seller_id><trade_status>TRADE_SUCCESS</trade_status><is_total_fee_adjust>N</is_total_fee_adjust><total_fee>1.00</total_fee><gmt_payment>2015-03-25 16:10:12</gmt_payment><seller_email>cnonlinegroup@lanecrawford.com</seller_email><price>1.00</price><buyer_id>2088812802232761</buyer_id><notify_id>72994e255d64bd37b07adebb43105cc768</notify_id><use_coupon>N</use_coupon></notify>";
+			xml = "<notify><payment_type>1</payment_type><subject>901173003</subject><trade_no>2015032500001000760045995663</trade_no><buyer_email>14714348178@163.com</buyer_email><gmt_create>2015-03-25 16:09:36</gmt_create><notify_type>trade_status_sync</notify_type><quantity>1</quantity><out_trade_no>901173003</out_trade_no><notify_time>2015-03-25 16:10:12</notify_time><seller_id>2088711824364505</seller_id><trade_status>TRADE_SUCCESS</trade_status><is_total_fee_adjust>N</is_total_fee_adjust><total_fee>1.00</total_fee><gmt_payment>2015-03-25 16:10:12</gmt_payment><seller_email>cnonlinegroup@lanecrawford.com</seller_email><price>1.00</price><buyer_id>2088812802232761</buyer_id><notify_id>72994e255d64bd37b07adebb43105cc768</notify_id><use_coupon>N</use_coupon></notify>";
+			System.out.println(xml);
+			
+			test = (MobileResponse) JABXParser.fromXML(new StringReader(xml), MobileResponse.class);
+			System.out.println(test.toString());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void testXMLInDR(){
+		String encodedDR = " suspend=suspend&sec_id=MD5&error=error&errorDrUpdateFailed=errorDrUpdateFailed&authSuccess=authSuccess&vpcPay=vpcPay&sign=9bf599a58de0741ea638e46d63871d1e&v=1.0&authFailed=authFailed&notify_data=%3Cnotify%3E%3Cpayment_type%3E1%3C%2Fpayment_type%3E%3Csubject%3E901173003%3C%2Fsubject%3E%3Ctrade_no%3E2015032500001000760045995663%3C%2Ftrade_no%3E%3Cbuyer_email%3E14714348178%40163.com%3C%2Fbuyer_email%3E%3Cgmt_create%3E2015-03-25+16%3A09%3A36%3C%2Fgmt_create%3E%3Cnotify_type%3Etrade_status_sync%3C%2Fnotify_type%3E%3Cquantity%3E1%3C%2Fquantity%3E%3Cout_trade_no%3E901173003%3C%2Fout_trade_no%3E%3Cnotify_time%3E2015-03-25+16%3A10%3A12%3C%2Fnotify_time%3E%3Cseller_id%3E2088711824364505%3C%2Fseller_id%3E%3Ctrade_status%3ETRADE_SUCCESS%3C%2Ftrade_status%3E%3Cis_total_fee_adjust%3EN%3C%2Fis_total_fee_adjust%3E%3Ctotal_fee%3E1.00%3C%2Ftotal_fee%3E%3Cgmt_payment%3E2015-03-25+16%3A10%3A12%3C%2Fgmt_payment%3E%3Cseller_email%3Ecnonlinegroup%40lanecrawford.com%3C%2Fseller_email%3E%3Cprice%3E1.00%3C%2Fprice%3E%3Cbuyer_id%3E2088812802232761%3C%2Fbuyer_id%3E%3Cnotify_id%3E72994e255d64bd37b07adebb43105cc768%3C%2Fnotify_id%3E%3Cuse_coupon%3EN%3C%2Fuse_coupon%3E%3C%2Fnotify%3E&alreadyAuthSuccess=alreadyAuthSuccess&pending=pending&service=alipay.wap.trade.create.direct&fraudCheck=fraudCheck";
+		String dr = null;
+
+		System.out.println("testXMLInDR()"+", encodedDR="+encodedDR);
+		Map<String, String> map = createMapFromQueryString(encodedDR);
+		
+		
+		for(@SuppressWarnings("rawtypes") Map.Entry entry : map.entrySet()){
+			System.out.println("key="+ entry.getKey() +", value="+ entry.getValue());
+		}
+		
+		if(map.containsKey("service") && "alipay.wap.trade.create.direct".contentEquals((String) map.get("service"))){
+			System.out.println("testXMLInDR()"+", fuckin mobile response" );
+		}else{
+			System.out.println("testXMLInDR()"+", fuckin aint mobile response" );
+		}
+	}
+
+	private static void testXMLParserSTQ() {
+		String xml = null;
+		SingleTradeQueryResponse test = null;
+		try {
+//			xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><alipay><is_success>T</is_success><request><param name=\"trade_no\">2015031124200354</param><param name=\"_input_charset\">utf-8</param><param name=\"service\">single_trade_query</param><param name=\"partner\">2088801766902304</param></request><response><trade><buyer_email>alipay_test@alipay.com</buyer_email><buyer_id>2088102151633543</buyer_id><discount>0.00</discount><flag_trade_locked>0</flag_trade_locked><gmt_create>2015-03-1110:28:41</gmt_create><gmt_last_modified_time>2015-03-1110:28:54</gmt_last_modified_time><gmt_payment>2015-03-1110:28:54</gmt_payment><is_total_fee_adjust>F</is_total_fee_adjust><operator_role>B</operator_role><out_trade_no>150311288690</out_trade_no><payment_type>8</payment_type><price>0.01</price><quantity>1</quantity><seller_email>shuzhi_zsz@126.com</seller_email><seller_id>2088801766902304</seller_id><subject>管理付款编号150311288690</subject><to_buyer_fee>0.00</to_buyer_fee><to_seller_fee>0.01</to_seller_fee><total_fee>0.01</total_fee><trade_no>2015031124200354</trade_no><trade_status>TRADE_SUCCESS</trade_status><use_coupon>F</use_coupon></trade></response><sign>9517107e5ba7df60853f6d347ca3493b</sign><sign_type>MD5</sign_type></alipay>";
+			xml = "<alipay><is_success>T</is_success><request><param name=\"trade_no\">2015031124200354</param><param name=\"_input_charset\">utf-8</param><param name=\"service\">single_trade_query</param><param name=\"partner\">2088801766902304</param></request><response><trade><buyer_email>alipay_test@alipay.com</buyer_email><buyer_id>2088102151633543</buyer_id><discount>0.00</discount><flag_trade_locked>0</flag_trade_locked><gmt_create>2015-03-1110:28:41</gmt_create><gmt_last_modified_time>2015-03-1110:28:54</gmt_last_modified_time><gmt_payment>2015-03-1110:28:54</gmt_payment><is_total_fee_adjust>F</is_total_fee_adjust><operator_role>B</operator_role><out_trade_no>150311288690</out_trade_no><payment_type>8</payment_type><price>0.01</price><quantity>1</quantity><seller_email>shuzhi_zsz@126.com</seller_email><seller_id>2088801766902304</seller_id><subject>管理付款编号150311288690</subject><to_buyer_fee>0.00</to_buyer_fee><to_seller_fee>0.01</to_seller_fee><total_fee>0.01</total_fee><trade_no>2015031124200354</trade_no><trade_status>TRADE_SUCCESS</trade_status><use_coupon>F</use_coupon></trade></response><sign>9517107e5ba7df60853f6d347ca3493b</sign><sign_type>MD5</sign_type></alipay>";
+			System.out.println(xml);
+			
+			test = (SingleTradeQueryResponse) JABXParser.fromXML(new StringReader(xml), SingleTradeQueryResponse.class);
+			System.out.println(test.toString());
+			
+
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void testbooleancast(){
+		boolean falsebool = Boolean.valueOf("false");
+		boolean truebool = Boolean.valueOf("true");
+		boolean invalidbool = Boolean.valueOf("invalid");
+		boolean nullbool = Boolean.valueOf(null);
+
+		System.out.println("testbooleancast" + ", falsebool="+falsebool);
+		System.out.println("testbooleancast" + ", truebool="+truebool);
+		System.out.println("testbooleancast" + ", invalidbool="+invalidbool);
+		System.out.println("testbooleancast" + ", nullbool="+nullbool);
+	}
+	private static void testXMLParser2(){
+		String res_data = "<?xml version=\"1.0\" encoding=\"utf-8\"?><direct_trade_create_res><request_token>201503231e817a527326405a3c2861228f4b7ca8</request_token></direct_trade_create_res>";
+		
+		System.out.println("testXMLParser" + ", res_data="+res_data);
+		
+		String ret = null;
+		
+		
+		Document document;
+		try {
+			document = DocumentHelper.parseText(res_data);
+
+			System.out.println("generateToken()" +", document="+document.toString());
+			System.out.println("generateToken()" +", document.getName()="+document.getName());
+			System.out.println("generateToken()" +", document.getStringValue()="+document.getStringValue());
+			
+	//		System.out.println("generateToken()" +", this.getTokenNode()="+this.getTokenNode());
+			
+	//		Node node = document.selectSingleNode(this.getTokenNode());
+			Node node = document.selectSingleNode( "//direct_trade_create_res/request_token" );
+			System.out.println("generateToken()" +", node="+node.toString());
+			System.out.println("generateToken()" +", node.getName()="+node.getName());
+			System.out.println("generateToken()" +", node.getStringValue()="+node.getStringValue());
+			
+	
+			ret = node.getText();
+			System.out.println("generateToken()" +", ret="+ret);
+		} catch (DocumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public final static String PARAM_SIGN_TYPE = "sign_type";
+	public final static String PARAM_SIGN = "sign";
+	private static void testVerifySign(){
+		/*
+
+2015-03-20 11:35:30,205 INFO  [STDOUT] (http-172.16.210.20-8180-1) 2015-03-20 11:35:30,205 INFO [c.l.o.o.c.a.AlipayClient] - [updateTransactionDR] - updateTransactionDR()
+ , DigitalReceipt=suspend=suspend&subject=901172627&sign_type=MD5&is_total_fee_adjust=N&notify_type=trade_status_sync&out_trade_no=901172627&out_channel_inst=INST_ALIPAY&vpcPay=vpcPay&authFailed=authFailed&buyer_email=14714348178%40163.com&total_fee=1.00&pending=pending&quantity=1&fraudCheck=fraudCheck&buyer_id=2088812802232761&trade_no=2015032000001000760045515773&notify_time=2015-03-20+11%3A35%3A30&use_coupon=N&error=error&errorDrUpdateFailed=errorDrUpdateFailed&authSuccess=authSuccess&trade_status=TRADE_SUCCESS&gmt_payment=2015-03-20+11%3A35%3A12&discount=0.00&sign=08911cc3fabf64844b263a7266dbef0c&gmt_create=2015-03-20+11%3A35%3A01&price=1.00&alreadyAuthSuccess=alreadyAuthSuccess&seller_id=2088711824364505&seller_email=cnonlinegroup%40lanecrawford.com&notify_id=e503f27226444e5384b8998aaddce6c168&payment_type=1
+ , isSigned=false
+
+		 */
+		String key = "9m2q4kn4uakhh4c7ce354toz5cuzrh3v";
+//		String dr = "suspend=suspend&subject=901172627&sign_type=MD5&is_total_fee_adjust=N&notify_type=trade_status_sync&out_trade_no=901172627&out_channel_inst=INST_ALIPAY&vpcPay=vpcPay&authFailed=authFailed&buyer_email=14714348178%40163.com&total_fee=1.00&pending=pending&quantity=1&fraudCheck=fraudCheck&buyer_id=2088812802232761&trade_no=2015032000001000760045515773&notify_time=2015-03-20+11%3A35%3A30&use_coupon=N&error=error&errorDrUpdateFailed=errorDrUpdateFailed&authSuccess=authSuccess&trade_status=TRADE_SUCCESS&gmt_payment=2015-03-20+11%3A35%3A12&discount=0.00&sign=08911cc3fabf64844b263a7266dbef0c&gmt_create=2015-03-20+11%3A35%3A01&price=1.00&alreadyAuthSuccess=alreadyAuthSuccess&seller_id=2088711824364505&seller_email=cnonlinegroup%40lanecrawford.com&notify_id=e503f27226444e5384b8998aaddce6c168&payment_type=1";
+//		String sign = "08911cc3fabf64844b263a7266dbef0c";
+		String dr = "suspend=suspend&subject=901172630&sign_type=MD5&is_total_fee_adjust=N&notify_type=trade_status_sync&out_trade_no=901172630&out_channel_inst=INST_ALIPAY&vpcPay=vpcPay&authFailed=authFailed&buyer_email=14714348178%40163.com&total_fee=1.00&pending=pending&quantity=1&fraudCheck=fraudCheck&buyer_id=2088812802232761&trade_no=2015032000001000760045536151&notify_time=2015-03-20+15%3A38%3A07&use_coupon=N&error=error&errorDrUpdateFailed=errorDrUpdateFailed&authSuccess=authSuccess&trade_status=TRADE_SUCCESS&gmt_payment=2015-03-20+15%3A24%3A27&discount=0.00&sign=200204d08ec11df13719212e5f552c54&gmt_create=2015-03-20+15%3A24%3A14&price=1.00&alreadyAuthSuccess=alreadyAuthSuccess&seller_id=2088711824364505&seller_email=cnonlinegroup%40lanecrawford.com&notify_id=ed50e3a6e5e741d50ee35dbc869073aa68&payment_type=1";
+		String sign = "200204d08ec11df13719212e5f552c54";
+
+		List<String> keyFilters = new ArrayList<String>();
+		keyFilters.add(PARAM_SIGN);
+		keyFilters.add(PARAM_SIGN_TYPE);
+		
+		System.out.println("testVerifySign()"+", dr="+dr);		
+		System.out.println("testVerifySign()"+", sign="+sign+", key="+key+", keyFilters="+keyFilters);
+		
+		
+		boolean isSigned = false;
+		
+		
+		isSigned = verifyMD5(dr, sign, key, keyFilters);
+		System.out.println("testVerifySign()"+", isSigned="+isSigned);
+		
+		/*
+		
+		String drDecoded = URLDecoder.decode(dr);
+		System.out.println("testVerifySign()"+", drDecoded="+drDecoded);
+		
+		isSigned = verifyMD5(drDecoded, sign, key, keyFilters);
+		System.out.println("testVerifySign() **drDecoded"+", isSigned="+isSigned);
+		*/
+		
+		
+		isSigned = getSignVeryfy(createMapFromQueryString(dr),sign);
+		System.out.println("testVerifySign() ALIPAY API DEMO"+", isSigned="+isSigned);
+	}
+	
+	private static boolean getSignVeryfy(Map<String, String> params, String sign) {
+		
+
+		System.out.println("getSignVeryfy()"+", params="+params.size());
+		System.out.println("getSignVeryfy()"+", params containsKey sign ="+params.containsKey("sign"));
+		System.out.println("getSignVeryfy()"+", params containsKey sign_type="+params.containsKey("sign_type"));
+		
+    	//过滤空值、sign与sign_type参数
+    	Map<String, String> sParaNew = util.AlipayCore.paraFilter(params);
+    	
+		System.out.println("getSignVeryfy()"+", sParaNew="+sParaNew.size());
+		System.out.println("getSignVeryfy()"+", sParaNew containsKey sign ="+sParaNew.containsKey("sign"));
+		System.out.println("getSignVeryfy()"+", sParaNew containsKey sign_type="+sParaNew.containsKey("sign_type"));
+		
+        //获取待签名字符串
+        String preSignStr = util.AlipayCore.createLinkString(sParaNew);
+		System.out.println("getSignVeryfy()"+", preSignStr="+preSignStr);
+        //获得签名验证结果
+        boolean isSign = false;
+//        if(AlipayConfig.sign_type.equals("MD5") ) {
+        	isSign = util.MD5.verify(preSignStr, sign, "9m2q4kn4uakhh4c7ce354toz5cuzrh3v", "utf-8");
+//        }
+        return isSign;
+    }
+	
+
+
+    public static boolean verifyMD5(String strText, String sign, String key, List<String> keyFilters) {
+    	boolean ret = false;
+    	try{
+    		// create map from query string
+    		Map<String, String> params = createMapFromQueryString(strText);
+    		System.out.println("verifyMD5()"+", params="+params.size());
+    		System.out.println("verifyMD5()"+", params containsKey sign ="+params.containsKey("sign"));
+    		System.out.println("verifyMD5()"+", params containsKey sign_type="+params.containsKey("sign_type"));
+    		
+    		// filer out sigjn related parameters
+        	Map<String, String> sParaNew = paraFilter(params,keyFilters);
+    		System.out.println("verifyMD5()"+", sParaNew="+sParaNew.size());
+    		System.out.println("verifyMD5()"+", sParaNew containsKey sign ="+sParaNew.containsKey("sign"));
+    		System.out.println("verifyMD5()"+", sParaNew containsKey sign_type="+sParaNew.containsKey("sign_type"));
+        	
+            // create query string with filtered query map
+            String preSignStr = createLinkString(sParaNew);
+    		System.out.println("verifyMD5()"+", preSignStr="+preSignStr);
+    		System.out.println("verifyMD5()"+", key="+key);
+
+    		String input = preSignStr + key;
+    		System.out.println("verifyMD5()"+", input="+input);
+            // create sign with query string
+			MD5 md5 = new MD5();
+	    	String mysign = md5.getMD5ofStr(input);
+    		System.out.println("verifyMD5()"+", mysign="+mysign);
+    		System.out.println("verifyMD5()"+", sign="+sign);
+
+            // verify sign
+	    	if(mysign.equals(sign)) {
+	    		ret = true;
+	    	}
+    	}catch (Exception e){
+    		e.printStackTrace();
+    	}
+		System.out.println("verifyMD5()"+", ret="+ret);
+    	return ret;
+    }
+	
+	public static Map<String, String> createMapFromQueryString(String queryString)
+	{
+        Map<String, String> map = new HashMap<String, String>();
+        StringTokenizer st = new StringTokenizer(queryString, "&");
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            int i = token.indexOf('=');
+            if (i > 0) {
+                try {
+                    String key = token.substring(0, i);
+                    String value = URLDecoder.decode(token.substring(i + 1, token.length()),"UTF-8");
+                    map.put(key, value);
+                } catch (Exception ex) {
+                    // Do Nothing and keep looping through data
+                }
+            }
+        }
+        return map;
+    }
+	
+	
+    public static Map<String, String> paraFilter(Map<String, String> sArray, List<String> keyFilters) {
+    	
+        Map<String, String> result = new HashMap<String, String>();
+
+        if (sArray == null || sArray.size() <= 0) {
+            return result;
+        }else{
+        }
+        
+        for (String key : sArray.keySet()) {
+            String value = sArray.get(key);
+            
+            
+            if (value == null || value.equals("") || key.equalsIgnoreCase("sign")
+                || key.equalsIgnoreCase("sign_type")) {
+                continue;
+            }
+             
+            /*
+            if (value == null || value.equals("")) {
+                continue;
+            }
+            
+            if(null == keyFilters || keyFilters.isEmpty()) {
+            	continue;
+            }
+            
+            for(String keyFilter:keyFilters){
+                if(keyFilter == null || keyFilter.equals("") || key.equalsIgnoreCase(keyFilter)){
+                	continue;
+                }
+            }
+            */
+            
+            
+            result.put(key, value);
+        }
+
+        return result;
+    }
+
+    /** 
+     * 把数组所有元素排序，并按照“参数=参数值”的模式用“&”字符拼接成字符串
+     * @param params 需要排序并参与字符拼接的参数组
+     * @return 拼接后字符串
+     */
+    public static String createLinkString(Map<String, String> params) {
+
+        List<String> keys = new ArrayList<String>(params.keySet());
+        Collections.sort(keys);
+
+        String prestr = "";
+
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            String value = params.get(key);
+
+            if (i == keys.size() - 1) {//拼接时，不包括最后一个&字符
+                prestr = prestr + key + "=" + value;
+            } else {
+                prestr = prestr + key + "=" + value + "&";
+            }
+        }
+
+        return prestr;
+    }
+	
+	private static void testHash(){
+		int vipCardfieldLength = 8;
+		int mobileNumfieldLength = 7;
+		int securityfieldLength = 0;
+		int length = 101;
+		String text = "a";
+		String input = "12345678901234";
+		int prefix = vipCardfieldLength+mobileNumfieldLength;
+		System.out.println("input length ,hash length,securityfield Length,vipCardfield Length,mobileNumfield Length");
+		for(int i =prefix;i<length;i++){
+			try {
+				input+=text;
+				String hash = generateHash(input);
+				
+				
+				securityfieldLength = input.length() - (vipCardfieldLength+mobileNumfieldLength);
+				
+
+				System.out.println(input.length()+","+hash.length()+","+securityfieldLength+","+vipCardfieldLength+","+mobileNumfieldLength);
+				
+				
+			} catch (GeneralSecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static String generateHash(String text) throws GeneralSecurityException{
+		return new TripleDES(true).encrypt(text);
+	}
+	
+	private static void testParseArray(){
+		String payChanTyp = "OPTIMIZED_MOTO|BALANCE";
+		String payChanAmt = "90.00|10.00";
+		String delimitor = "\\|";
+
+		System.out.println("testParseArray"+", payChanTyp="+payChanTyp+", payChanAmt="+payChanAmt+", delimitor="+delimitor);
+		
+		
+		List<PaymentChannel> list = parsePayChan(payChanTyp,payChanAmt,delimitor);
+		
+		
+		for(PaymentChannel temp:list){
+			System.out.println("temp="+temp.toString());
+		}
+		return;
+	}
+	
+	private static List<PaymentChannel> parsePayChan(String payChanTyp,String payChanAmt,String delimitor){
+		List<PaymentChannel> ret = null;
+		String [] payChanTypArray = null;
+		String [] payChanAmtArray = null;
+		
+		try{
+			//input check
+			if(payChanTyp.isEmpty()||payChanAmt.isEmpty()||delimitor.isEmpty()){
+				System.out.println("invalid input");
+				return ret;
+			}
+			
+			payChanTypArray = payChanTyp.split(delimitor);
+			payChanAmtArray = payChanAmt.split(delimitor);
+			
+			//array check
+			if(payChanTypArray.length != payChanAmtArray.length){
+				System.out.println("invalid type and ammount array length"+",payChanTypArray.length="+payChanTypArray.length+",payChanAmtArray.length="+payChanAmtArray.length);
+				return ret;
+			}
+			
+			ret= new ArrayList<PaymentChannel>();
+			for(int index = 0; index < payChanTypArray.length ; index++){
+				String type = payChanTypArray[index];
+				Double amount = Double.valueOf(payChanAmtArray[index]);
+
+				PaymentChannel temp = new PaymentChannel(type,amount);
+				ret.add(temp);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return ret;
+	}
+	
+	private static final String OOPG_WS_URI_LOCAL =  "http://127.0.0.1:8380/oopg/services/Payment";
+	private static final String OOPG_WS_URI_UAT_CN =  "http://172.16.210.21:8080/oopg/services/Payment";
+	private static final String OOPG_WS_URI_UAT =  "http://172.16.210.22:8080/oopg/services/Payment";
+	private static void testOOPGCalls(){
+		try {
+			oopgStartAuth(OOPG_WS_URI_LOCAL);
+//			oopgUpdateDR(OOPG_WS_URI_LOCAL);
+//			oopgQueryTransaction(OOPG_WS_URI_LOCAL);
+//			oopgGetDoUrl(OOPG_WS_URI_LOCAL);
+//			oopgProcessIdleTransaction(OOPG_WS_URI_LOCAL);
+//			oopgUpdateRefundDR(OOPG_WS_URI_LOCAL);
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void oopgUpdateRefundDR(String url) throws MalformedURLException, UnsupportedEncodingException, Exception{
+
+		com.lanecrawford.oto.oopg.client.updateRefundDR.PaymentService ps = new com.lanecrawford.oto.oopg.client.updateRefundDR.PaymentServiceLocator();
+		com.lanecrawford.oto.oopg.client.updateRefundDR.Payment p = null;
+
+		System.out.println("oopgUpdateRefundDR() url = "+url);
+
+		p = ps.getPayment(new URL(url));
+		
+		String response = "";
+		String dr = "";
+		try {
+			/*
+			String dr = "sign=25e737daeefdbeb64cb407ba300a6033"
+						+ "&result_details=2015042100001000760048511054^1.00^SUCCESS$cnonlinegroup@lanecrawford.com^2088711824364505^0.01^SUCCESS"
+						+ "&notify_time=2015-04-24 14:55:30"
+						+ "&sign_type=MD5"
+						+ "&notify_type=batch_refund_notify"
+						+ "&notify_id=459108eafb61667a3669db8ba24a41em68"
+						+ "&batch_no=20150428001"
+						+ "&success_num=1";
+						*/
+			
+			dr = "sign=25e737daeefdbeb64cb407ba300a6033"
+					+ "&result_details=2015111710001982^1.00^SUCCESS"
+					+ "&notify_time=2015-12-14 10:55:30"
+					+ "&sign_type=MD5"
+					+ "&notify_type=batch_refund_notify"
+					+ "&notify_id=459108eafb61667a3669db8ba24a41em68"
+					+ "&batch_no=20151214105044277"
+					+ "&success_num=1";
+			String ct = "alipay";
+			System.out.println("oopgUpdateRefundDR()"+", url = "+url+", dr = "+dr+", ct = "+ct);
+			
+			response = p.updateRefundDR(dr, ct);
+			System.out.println("oopgUpdateRefundDR()"+", response = "+response);
+			
+		} catch (RemoteException e) {
+			System.out.println(e.toString());
+		}
+		
+		return;
+	}
+	public static void oopgProcessIdleTransaction(String url) throws MalformedURLException, UnsupportedEncodingException, Exception{
+
+		com.lanecrawford.oto.oopg.client.processIdleTransaction.PaymentService ps = new com.lanecrawford.oto.oopg.client.processIdleTransaction.PaymentServiceLocator();
+		com.lanecrawford.oto.oopg.client.processIdleTransaction.Payment p = null;
+		
+		System.out.println("oopgProcessIdleTransaction() url = "+url);
+
+		p = ps.getPayment(new URL(url));
+		
+		String response = "";
+		try {
+			String oopgGuid = "BD7BB601-578B-4775-917B-CD61A7CBC47A";
+			
+			System.out.println("oopgProcessIdleTransaction()" + ", oopgGuid = "+ oopgGuid);
+			response = p.processIdleTransaction(oopgGuid);
+			System.out.println("oopgProcessIdleTransaction()" + ", oopgGuid = "+ oopgGuid + ", response = "+ response);
+
+		} catch (RemoteException e) {
+			System.out.println(e.toString());
+		}
+
+		return;
+	}
+
+	public static void oopgGetDoUrl(String url) throws MalformedURLException, UnsupportedEncodingException, Exception{
+
+		com.lanecrawford.oto.oopg.client.getDoUrl.PaymentService ps = new com.lanecrawford.oto.oopg.client.getDoUrl.PaymentServiceLocator();
+		com.lanecrawford.oto.oopg.client.getDoUrl.Payment p = null;
+		
+		System.out.println("oopgQueryTransaction() url = "+url);
+
+		p = ps.getPayment(new URL(url));
+		
+		String response = "";
+		try {
+			String oopgGuid = "F1CEA267-6538-457B-9553-D78F77A4B5D3";
+			
+			System.out.println("oopgGetDoUrl()" + ", oopgGuid = "+ oopgGuid);
+			response = p.getDoUrl(oopgGuid);
+			System.out.println("oopgGetDoUrl()" + ", oopgGuid = "+ oopgGuid + ", response = "+ response);
+
+		} catch (RemoteException e) {
+			System.out.println(e.toString());
+		}
+
+		return;
+	}
+
+	public static void oopgQueryTransaction(String url) throws MalformedURLException, UnsupportedEncodingException, Exception{
+
+		com.lanecrawford.oto.oopg.client.queryTransaction.PaymentService ps = new com.lanecrawford.oto.oopg.client.queryTransaction.PaymentServiceLocator();
+		com.lanecrawford.oto.oopg.client.queryTransaction.Payment p = null;
+		
+		System.out.println("oopgQueryTransaction() url = "+url);
+
+		p = ps.getPayment(new URL(url));
+		
+		String response = "";
+		try {
+			String cardType="alipay"; 
+//			String orderReference = "901173602";
+			String orderReference = "901173702";
+			
+			System.out.println("oopgQueryTransaction()" + ", cardType = "+ cardType + ", orderReference = "+ orderReference);
+			response = p.queryTransaction(cardType, orderReference);
+			System.out.println("oopgQueryTransaction()" + ", cardType = "+ cardType + ", orderReference = "+ orderReference+ ", response = "+ response);
+
+		} catch (RemoteException e) {
+			System.out.println(e.toString());
+		}
+
+		return;
+	}
+	public static void oopgStartAuth(String url) throws MalformedURLException, UnsupportedEncodingException, Exception{
+
+		com.lanecrawford.oto.oopg.client.startauthorise.PaymentService ps = new com.lanecrawford.oto.oopg.client.startauthorise.PaymentServiceLocator();
+		com.lanecrawford.oto.oopg.client.startauthorise.Payment p = null;
+
+		System.out.println("oopgStartAuth() url = "+url);
+
+		p = ps.getPayment(new URL(url));
+		
+		String response = "";
+		try {
+// UAT
+			String dummyOrderId = "9876543225n";
+			String currencyCode="CNY"; 
+			int authorizeAmount=1; 
+			String cardType="alipay"; 
+			String empty = ""; 
+			String txnType="online"; 
+			String fraudCheckXML=
+					"<FRAUD_CHECK_CONTENT> "
+						+ "<SHIPPING> "
+							+ "<FIRST-NAME><![CDATA[被視為]]></FIRST-NAME> "
+							+ "<LAST-NAME><![CDATA[司公布]]></LAST-NAME> "
+							+ "<ADDR_1><![CDATA[包括本港在內的大中華區銷情]]></ADDR_1> "
+							+ "<ADDR_2/> <ADDR_3/> "
+							+ "<ADDR_CITY><![CDATA[手機業人士]]></ADDR_CITY> "
+							+ "<ADDR_COUNTRY><![CDATA[CN]]></ADDR_COUNTRY> "
+							+ "<ADDR_STATE><![CDATA[銷量大]]></ADDR_STATE> "
+							+ "<ADDR_POSTAL><![CDATA[211100]]></ADDR_POSTAL> "
+							+ "<ADDR_ZIP><![CDATA[211100]]></ADDR_ZIP> "
+						+ "</SHIPPING> "
+						+ "<BILLING> "
+							+ "<FIRST-NAME><![CDATA[被視為]]></FIRST-NAME> "
+							+ "<LAST-NAME><![CDATA[司公布]]></LAST-NAME> "
+							+ "<ADDR_1><![CDATA[包括本港在內的大中華區銷情]]></ADDR_1> "
+							+ "<ADDR_2/> <ADDR_3/> "
+							+ "<ADDR_CITY><![CDATA[手機業人士]]></ADDR_CITY> "
+							+ "<ADDR_COUNTRY><![CDATA[CN]]></ADDR_COUNTRY> "
+							+ "<ADDR_STATE><![CDATA[銷量大]]></ADDR_STATE> "
+							+ "<ADDR_POSTAL><![CDATA[211100]]></ADDR_POSTAL> "
+							+ "<ADDR_ZIP><![CDATA[211100]]></ADDR_ZIP> "
+						+ "</BILLING> "
+						+ "<FIRST-NAME><![CDATA[售神話的蘋]]></FIRST-NAME> <LAST-NAME><![CDATA[公司公布]]></LAST-NAME> "
+						+ "<MEMBER_ID><![CDATA[60640207]]></MEMBER_ID> "
+						+ "<IP_ADDR><![CDATA[180.98.98.121]]></IP_ADDR> <NUMBER_OF_ITEMS><![CDATA[2]]></NUMBER_OF_ITEMS> "
+						+ "<CopyAndPasteDetected><![CDATA[false]]></CopyAndPasteDetected> "
+						+ "<GeoIPCountryDetected><![CDATA[CN]]></GeoIPCountryDetected> "
+						+ "<HighestQuantityInOrder><![CDATA[1]]></HighestQuantityInOrder> "
+						+ "<PCardNumberAwardedDiscount/> "
+						+ "<Email><![CDATA[935717760@qq.com]]></Email> "
+						+ "<ATG_ORDER_ID><![CDATA["+dummyOrderId+"]]></ATG_ORDER_ID> "
+						+ "<ATG_RMS_ID><![CDATA["+dummyOrderId+"]]></ATG_RMS_ID> "
+						+ "<STAFF_ID/> <STAFF_DISCOUNT_LEVEL/> <STAFF_DISCOUNT_AMOUNT/> <ALLOW_PAY_BY_EGC>true</ALLOW_PAY_BY_EGC> "
+						+ "<PCARD_FIRST_NAME>本港</PCARD_FIRST_NAME> "
+						+ "<PCARD_LAST_NAME>在內</PCARD_LAST_NAME> "
+					+ "</FRAUD_CHECK_CONTENT> "; 
+			String returnURL="https://secure.uat.lanecrawford.com.cn/checkout/orderConf.jsp"; 
+			String rmsId=dummyOrderId; 
+			int bankId=0; 
+			String idCardNumber="123"; 
+			String mobilePhoneNumber="123"; 
+			boolean zeroAmountWithPromotion=false; 
+//			boolean isMobile=false;String expireTime = "10m";
+			boolean isMobile=false;
+			String expireTime = "10";
+			String asynReturnURL="https://secure.uat.lanecrawford.com.cn/checkout/resulthandler.jsp";
+			
+			System.out.println("oopgQueryTransaction()"+", fraudCheckXML = "+fraudCheckXML);
+			
+			
+			response = p.startAuthorise(
+					currencyCode, authorizeAmount, cardType,
+					empty, empty, empty, 
+					empty, txnType, fraudCheckXML, 
+					returnURL, rmsId, bankId, 
+					idCardNumber, mobilePhoneNumber, zeroAmountWithPromotion, 
+					isMobile, asynReturnURL);
+			 
+			/*
+			response = p.startAuthorise("", 1, "", "", "", "", "", "", "", "", "", 1, "", "", false, false);
+			*/
+//			response = p.startAuthorise("", 1, "", "", "", "", "", "", "", "", "", 1, "", "", false, false,expireTime,asynReturnURL);
+			System.out.println("oopgQueryTransaction()"+", response = "+response);
+			
+		} catch (RemoteException e) {
+			System.out.println(e.toString());
+		}
+		
+		return;
+	}
+	
+	public static void oopgUpdateDR(String url) throws MalformedURLException, UnsupportedEncodingException, Exception{
+
+		com.lanecrawford.oto.oopg.client.updatetransactiondr.PaymentService ps = new com.lanecrawford.oto.oopg.client.updatetransactiondr.PaymentServiceLocator();
+		com.lanecrawford.oto.oopg.client.updatetransactiondr.Payment p = null;
+
+		System.out.println("oopgUpdateDR() url = "+url);
+
+		p = ps.getPayment(new URL(url));
+		
+		String response = "";
+		try {
+// SIT
+			
+			//async
+			/*
+			String dr = "suspend=suspend&subject=901172613&sign_type=MD5&is_total_fee_adjust=N&"
+					+ "notify_type=trade_status_sync&out_trade_no=987654321e&out_channel_inst=INST_ALIPAY&"
+					+ "vpcPay=vpcPay&authFailed=authFailed&buyer_email=14714348178%40163.com&total_fee=1.00&"
+					+ "pending=pending&quantity=1&fraudCheck=fraudCheck&buyer_id=2088812802232761&"
+					+ "trade_no=2015031800001000760045366222&notify_time=2015-03-19+15%3A10%3A00&use_coupon=N&"
+					+ "error=error&errorDrUpdateFailed=errorDrUpdateFailed&authSuccess=authSuccess&"
+					+ "trade_status=TRADE_SUCCESS&gmt_payment=2015-03-18+14%3A46%3A13&discount=0.00&"
+					+ "sign=83763a6f2bb4a94c94e80eeb9e96c382&gmt_create=2015-03-18+14%3A46%3A02&price=1.00&"
+					+ "alreadyAuthSuccess=alreadyAuthSuccess&seller_id=2088711824364505&"
+					+ "seller_email=cnonlinegroup%40lanecrawford.com&notify_id=d9ae4633585a75f7f00f7c2ed4a057d468&payment_type=1";
+			*/		
+			
+			//mobile alipay api crete payment response(async)
+			//String dr = "suspend=suspend&sec_id=MD5&error=error&errorDrUpdateFailed=errorDrUpdateFailed&authSuccess=authSuccess&vpcPay=vpcPay&sign=9bf599a58de0741ea638e46d63871d1e&v=1.0&authFailed=authFailed&notify_data=%3Cnotify%3E%3Cpayment_type%3E1%3C%2Fpayment_type%3E%3Csubject%3E901173003%3C%2Fsubject%3E%3Ctrade_no%3E2015032500001000760045995663%3C%2Ftrade_no%3E%3Cbuyer_email%3E14714348178%40163.com%3C%2Fbuyer_email%3E%3Cgmt_create%3E2015-03-25+16%3A09%3A36%3C%2Fgmt_create%3E%3Cnotify_type%3Etrade_status_sync%3C%2Fnotify_type%3E%3Cquantity%3E1%3C%2Fquantity%3E%3Cout_trade_no%3E901173003%3C%2Fout_trade_no%3E%3Cnotify_time%3E2015-03-25+16%3A10%3A12%3C%2Fnotify_time%3E%3Cseller_id%3E2088711824364505%3C%2Fseller_id%3E%3Ctrade_status%3ETRADE_SUCCESS%3C%2Ftrade_status%3E%3Cis_total_fee_adjust%3EN%3C%2Fis_total_fee_adjust%3E%3Ctotal_fee%3E1.00%3C%2Ftotal_fee%3E%3Cgmt_payment%3E2015-03-25+16%3A10%3A12%3C%2Fgmt_payment%3E%3Cseller_email%3Ecnonlinegroup%40lanecrawford.com%3C%2Fseller_email%3E%3Cprice%3E1.00%3C%2Fprice%3E%3Cbuyer_id%3E2088812802232761%3C%2Fbuyer_id%3E%3Cnotify_id%3E72994e255d64bd37b07adebb43105cc768%3C%2Fnotify_id%3E%3Cuse_coupon%3EN%3C%2Fuse_coupon%3E%3C%2Fnotify%3E&alreadyAuthSuccess=alreadyAuthSuccess&pending=pending&service=alipay.wap.trade.create.direct&fraudCheck=fraudCheck";
+			
+			//desktop async
+//			String dr = "subject=901173304&sign_type=MD5&is_total_fee_adjust=N&notify_type=trade_status_sync&out_trade_no=901173304&out_channel_inst=INST_ALIPAY&vpcPay=vpcPay&buyer_email=14714348178%40163.com&total_fee=1.00&quantity=1&buyer_id=2088812802232761&trade_no=2015033100001000760046499185&notify_time=2015-03-31+20%3A35%3A21&use_coupon=N&out_channel_type=BALANCE&trade_status=TRADE_SUCCESS&gmt_payment=2015-03-31+11%3A11%3A14&discount=0.00&sign=752d958d940b488bcd8a05b4aff86924&gmt_create=2015-03-31+11%3A11%3A06&price=1.00&seller_id=2088711824364505&seller_email=cnonlinegroup%40lanecrawford.com&notify_id=618bff39eaf3f049c8da15d1bb5a128868&payment_type=1";
+/*
+			String dr = "subject=901173801&sign_type=MD5&is_total_fee_adjust=N&notify_type=trade_status_sync&out_trade_no=901173801&buyer_email=14714348178%40163.com&total_fee=57.00&quantity=1buyer_id=2088812802232761&trade_no=2015040800001000760047225271&notify_time=2015-04-08+10%3A55%3A23&use_coupon=N&trade_status=TRADE_SUCCESS&gmt_payment=2015-04-08+10%3A55%3A23&discount=0.00&sign=44d65184d8cf9f107be9c84cbfaaac9a&gmt_create=2015-04-08+10%3A42%3A43&price=57.00&seller_id=2088711824364505&seller_email=cnonlinegroup%40lanecrawford.com&notify_id=19167f611a50ad84e7c83cf548c1ecb568&payment_type=1"
+					+ "&out_channel_amount=28.06%7C28.94%7C10.01" 
+					+ "&out_channel_inst=ICBC%7CINST_ALIPAY%7CCARTOON" 
+					+ "&out_channel_type=B2C_EBANK%7CBALANCE%7CCARTOON"; 
+*/			
+			//destop sync , ha proxy
+//			String dr = "buyer_email=14714348178%40163.com&buyer_id=2088812802232761&exterface=create_direct_pay_by_user&is_success=T&notify_id=RqPnCoPT3K9%252Fvwbh3InTvaCTzrG9y6193YD1mpaVHkxbCtfLufFmn%252BjzLKT60dKSXzmI&notify_time=2015-03-30+15%3A57%3A57&notify_type=trade_status_sync&out_trade_no=901173201&payment_type=1&seller_email=cnonlinegroup%40lanecrawford.com&seller_id=2088711824364505&subject=901173201&total_fee=1.00&trade_no=2015033000001000760046432118&trade_status=TRADE_SUCCESS&sign=8df72aacb21824e058d06580f348d133&sign_type=MD5";
+			
+			//manual cancel testing, mobile sync call back
+			//http://www.sit.lanecrawford.com.cn/checkout/asyncResultHandlers.jsp?out_trade_no=901174203&request_token=request_token&result=fail&tender_id=&trade_no=unknown&sign_type=MD5&sign=12db31f8837bf686556924df1af2ef9d
+			String dr = "out_trade_no=901174203&request_token=request_token&result=fail&tender_id=unknown&trade_no=unknown&sign_type=MD5&sign=7b98692cf92a50eaf7d0b21da3cd2b6e";
+			
+			response = p.updateTransactionDR(dr);			 
+			System.out.println("oopgUpdateDR()"+", response = "+response);
+			
+		} catch (RemoteException e) {
+			System.out.println(e.toString());
+		}
+		
+		return;
+	}
+	private static void patchnumberwithzeroprefix(){
+		int number = 1234;
+		//int textLength = 3;
+		String textFormat = "%03d";
+		String text = String.format(textFormat, number);
+		
+		System.out.println("patchnumberwithzeroprefix()" + ", number="+number + ", textFormat="+textFormat+ ", text="+text);
+	}
+
+	private static void testmd5logicOOPG(){
+		//String key = "9m2q4kn4uakhh4c7ce354toz5cuzrh3v";
+		/*
+https://mapi.alipay.com/gateway.do?
+service=create_direct_pay_by_user&sign_type=MD5&partner=2088711824364505&seller_email=cnonlinegroup@lanecrawford.com&_input_charset=utf-8&notify_url=https://secure.sit.lanecrawford.com.cn/checkout/resulthandler.jsp&show_url=http://www.lanecrawford.com.cn/&subject=901172608&total_fee=2820000&out_trade_no=901172608&payment_type=1
+&sign=9f9a29ed790f76f74bbbad1957dacbab
+		 */
+//		String text = "_input_charset=utf-8&notify_url=http://www.uat.lanecrawford.com/create_direct_pay_by_user-JAVA-UTF-8/notify_url.jsp&out_trade_no=o27022015004&partner=2088711824364505&payment_type=1&return_url=http://www.uat.lanecrawford.com/create_direct_pay_by_user-JAVA-UTF-8/return_url.jsp&seller_email=cnonlinegroup@lanecrawford.com&service=create_direct_pay_by_user&show_url=http://www.xxx.com/myorder.html &subject=test_order_04&total_fee=0.01";
+//		String mysign= "95c156eddf60340b291f4b07bc10f5e0";
+		
+		/*
+		String text = "_input_charset=utf-8&notify_url=https://secure.sit.lanecrawford.com.cn/checkout/resulthandler.jsp&out_trade_no=901172608&partner=2088711824364505&payment_type=1&seller_email=cnonlinegroup@lanecrawford.com&service=create_direct_pay_by_user&show_url=http://www.lanecrawford.com.cn/&subject=901172608&total_fee=2820000"; 
+		String mysign= "f8733e16696a879dc40466c2a36789f0";
+		*/
+		
+//		, returnValue=3E8E4F70A3E7F4C8BFDCE9476BD4C231
+		
+		 // local tesing
+		String text = "service=create_direct_pay_by_user&sign_type=MD5&partner=2088711824364505&seller_email=cnonlinegroup@lanecrawford.com&_input_charset=utf-8&notify_url=https://secure.sit.lanecrawford.com.cn/checkout/resulthandler.jsp&show_url=http://www.lanecrawford.com.cn/&subject=987654321c&total_fee=1&out_trade_no=987654321c&payment_type=1";
+		String mysign= "3E8E4F70A3E7F4C8BFDCE9476BD4C231";
+		String key = "9m2q4kn4uakhh4c7ce354toz5cuzrh3v";
+		
+		//API demo alipay
+		/*
+ prestr=_input_charset=utf-8&notify_url=https://secure.sit.lanecrawford.com.cn/checkout/resulthandler.jsp&out_trade_no=987654321c&partner=2088711824364505&payment_type=1&seller_email=cnonlinegroup@lanecrawford.com&service=create_direct_pay_by_user&show_url=http://www.lanecrawford.com.cn/&subject=987654321c&total_fee=1
+ mysign=9b8ed8468078bc8ab9c320b1515a26e0
+*/
+		String sign = getMD5Info(text+key);
+		System.out.println("testmd5logicOOPG()"+", key="+key+", text="+text);
+		System.out.println("testmd5logicOOPG()"+", sign="+sign+", sign_lower="+sign.toLowerCase());
+				 
+		
+		boolean isEqualIgnorecase = false;
+		boolean isEqual = false;
+		isEqualIgnorecase = mysign.equalsIgnoreCase(sign);
+		isEqual = mysign.contentEquals(sign.toLowerCase());
+		System.out.println("testmd5logicOOPG()"+", isEqualIgnorecase="+isEqualIgnorecase+", isEqual="+isEqual);
+	}
+	public static String getMD5Info(String strText)
+	{
+		String returnValue = "";
+		
+		MD5 md5 = new MD5();
+		returnValue = md5.getMD5ofStr(strText);
+		System.out.println("getMD5Info()"+", strText="+strText+", returnValue="+returnValue);
+		
+		return returnValue;
+	}
+	
+	private static void testSpringRestTemplate(){
+        Map<String, String> vars = new HashMap<String, String>();
+        vars.put("id", "JS01");
+		
+        RestTemplate rt = new RestTemplate();
+        //rt.getMessageConverters().add(new MappingJacksonHttpMessageConverter());
+        //rt.getMessageConverters().add(new StringHttpMessageConverter());
+
+        
+        String gateway = "http://www.abc.com/gateway.do";
+        String url = new String(gateway);
+/*
+        User u = new User();
+        u.setName("Johnathan M Smith");
+        u.setUser("JS01");
+        User returns = rt.postForObject(uri, u, User.class, vars);
+*/
+        
+        URI uri = rt.postForLocation(url, null, vars);
+
+        try {
+			System.out.println("testSpringRestTemplate()"+", gateway=" + gateway+", url=" + url+", uri=" + uri+", uri=" + uri.toURL());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private static void testEncodeDecode2(){
+		String shippingState = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36";
+		
+		String encodeshippingState = "";
+		String decodeShippingState = "";
+		
+		
+		//byte[]   bytesEncoded = Base64.encodeBase64(shippingState.getBytes());
+		encodeshippingState = new String(org.apache.commons.codec.binary.Base64.encodeBase64(shippingState.getBytes()));
+		//System.out.println("ecncoded value is " + new String(bytesEncoded ));
+		
+		//byte[] valueDecoded= Base64.decodeBase64(encodeshippingState.getBytes());
+		decodeShippingState = new String(org.apache.commons.codec.binary.Base64.decodeBase64(encodeshippingState.getBytes()));
+		//System.out.println("Decoded value is " + new String(valueDecoded));
+
+		System.out.println(shippingState);
+		System.out.println(encodeshippingState);
+		System.out.println(decodeShippingState);
+		
+	}
+	private static void testEncodeDecode(){
+		String shippingState = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36";
+		
+		String encodeshippingState = "";
+		String decodeShippingState = "";
+		
+		
+		byte[]   bytesEncoded = Base64.encodeBase64(shippingState.getBytes());
+		encodeshippingState = new String(bytesEncoded);
+		//System.out.println("ecncoded value is " + new String(bytesEncoded ));
+		
+		byte[] valueDecoded= Base64.decodeBase64(bytesEncoded );
+		decodeShippingState = new String(valueDecoded);
+		//System.out.println("Decoded value is " + new String(valueDecoded));
+
+		System.out.println(shippingState);
+		System.out.println(encodeshippingState);
+		System.out.println(decodeShippingState);
+		
+	}
+	/*
+	private static void testATGEncodeDecode(){
+		
+//		String shippingState = "北京市";
+
+		String shippingState = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.111 Safari/537.36";
+//		String shippingState = "TESTING";
+		
+		String encodeshippingState = "";
+		String decodeShippingState = "";
+		
+		String method = "UTF-8";
+		
+		System.out.println("000"+", shippingState="+shippingState+", encodeshippingState="+encodeshippingState+", decodeShippingState="+decodeShippingState);
+		try {
+			encodeshippingState = atg.core.util.Base64.encodeToString(shippingState.getBytes(method));
+
+			System.out.println("aaa"+", shippingState="+shippingState+", encodeshippingState="+encodeshippingState+", decodeShippingState="+decodeShippingState);
+			
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		try {
+			decodeShippingState = new String(atg.core.util.Base64.decodeToByteArray(shippingState.getBytes(method)), method);
+			
+			System.out.println("bbb"+", shippingState="+shippingState+", encodeshippingState="+encodeshippingState+", decodeShippingState="+decodeShippingState);
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		System.out.println("ccc"+", shippingState="+shippingState+", encodeshippingState="+encodeshippingState+", decodeShippingState="+decodeShippingState);
+	}
+	*/
+	private static void testSplitTexttoMap(){
+		String electronicRmsId = "";
+		
+		Map<String,List<String>> test = split(electronicRmsId);
+	}
+	
+	private static Map<String,List<String>> split(String electronicRmsId){
+		Map<String,List<String>> ret = new HashMap<String,List<String>>();
+		
+		try {
+			String [] electronicItemsGroupAry = electronicRmsId.split(",");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return ret;
+	}
+	
+	private static void testMapArray(){
+		Map<String,List<String>> test = null;
+		
+		test = new HashMap<String,List<String>>();
+
+		List<String> l_A = new ArrayList<String>();
+		l_A.add("111");
+		l_A.add("222");
+		List<String> l_B = new ArrayList<String>();
+		l_B.add("333");
+
+		test.put("A", l_A);
+		test.put("B", l_B);
+		
+		for(@SuppressWarnings("rawtypes") Map.Entry entry : test.entrySet()){
+			System.out.println("key="+ entry.getKey() +", value="+ entry.getValue());
+		}
+		
+		String index0 = l_A.remove(0);
+		System.out.println("index0="+index0);
+	}
+	
+	private static void testString() {
+		try {
+			String region = "123";
+			String test = null;
+
+//	if (region.contentEquals(test)) {
+		if (test.contentEquals(region)) {
+				System.out.println("a");
+			} else {
+				System.out.println("b");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	private static void stringCompare(){
 		String test1 = "00";
 		String test2 = "0";
@@ -558,8 +2451,8 @@ public class LCMerchantToolDemo {
 	}
 	
 	private static void  testchinesecharlength(){
-		//String test = "中国工商银行四川成都沙河理工大学分理处招商银行天津分行南门外支行";
-		String test = "中国工商银行四川成都沙河理工大学分理处招商银行天津";
+		//String test = "ä¸­å›½å·¥å•†é“¶è¡Œå››å·�æˆ�éƒ½æ²™æ²³ç�†å·¥å¤§å­¦åˆ†ç�†å¤„æ‹›å•†é“¶è¡Œå¤©æ´¥åˆ†è¡Œå�—é—¨å¤–æ”¯è¡Œ";
+		String test = "ä¸­å›½å·¥å•†é“¶è¡Œå››å·�æˆ�éƒ½æ²™æ²³ç�†å·¥å¤§å­¦åˆ†ç�†å¤„æ‹›å•†é“¶è¡Œå¤©æ´¥";
 
 		System.out.println("test="+test);
 		System.out.println("test="+test.length());
@@ -596,7 +2489,12 @@ public class LCMerchantToolDemo {
 
 			System.out.println("not 0=");
 		}
-		
+
+		if(test.getTesting() == 0.0d ){
+
+			System.out.println("test.getTesting() == 0.0d");
+			
+		}
 		test.setTesting(100);
 		System.out.println("test.getTesting()="+test.getTesting());
 	}
@@ -610,8 +2508,8 @@ public class LCMerchantToolDemo {
 	}
 	
 	private static String  getLineSeperatorText(){
-		String a = "招商银行天津分行南门外支行行" + System.getProperty("line.separator");
-		String b = "魏丽锦" + System.getProperty("line.separator");
+		String a = "æ‹›å•†é“¶è¡Œå¤©æ´¥åˆ†è¡Œå�—é—¨å¤–æ”¯è¡Œè¡Œ" + System.getProperty("line.separator");
+		String b = "é­�ä¸½é”¦" + System.getProperty("line.separator");
 		String c = "6212264402018649529" + System.getProperty("line.separator");
 		
 		String d = a+b+c;
@@ -792,8 +2690,8 @@ public class LCMerchantToolDemo {
 	}
 	
 	private static void testutf2gb(){
-		String a = "招商银行天津分行南门外支行";
-		//String a = "装箱时请拍照";
+		String a = "æ‹›å•†é“¶è¡Œå¤©æ´¥åˆ†è¡Œå�—é—¨å¤–æ”¯è¡Œ";
+		//String a = "è£…ç®±æ—¶è¯·æ‹�ç…§";
 		//String gbStr = utf2gb(a);
 		ByteBuffer gbStr = encodeTpGb2312(a);
 		System.out.println("testutf2gb()"+"a:" + a);
@@ -834,9 +2732,6 @@ public class LCMerchantToolDemo {
 		}
 	}
 	
-	private static final String OOPG_WS_URI_LOCAL =  "http://127.0.0.1:8380/oopg/services/Payment";
-	private static final String OOPG_WS_URI_UAT_CN =  "http://172.16.210.21:8080/oopg/services/Payment";
-	private static final String OOPG_WS_URI_UAT =  "http://172.16.210.22:8080/oopg/services/Payment";
 	
 	public static void nbaCardHolderNumber(String url , String oopg_txnId_guid) throws MalformedURLException, UnsupportedEncodingException, Exception{
 		com.lanecrawford.oto.oopg.client.getCardHolderNumber.PaymentService ps =new com.lanecrawford.oto.oopg.client.getCardHolderNumber.PaymentServiceLocator();
@@ -1690,6 +3585,9 @@ public class LCMerchantToolDemo {
 	    bd = bd.setScale(places, RoundingMode.FLOOR);
 	    return bd.doubleValue();
 	}
+	
+	
+	
 	
 	private static void testXMLParser() {
 		String xml = null;
@@ -3486,7 +5384,7 @@ http://www.uat.lanecrawford.com/sitemapLibraryVideoArticle.xml
 	}
 
 	private static void testChinese(boolean isISO){
-		String ruleDescChi = "test富東店儷廊咖室龍";
+		String ruleDescChi = "testå¯Œæ�±åº—å„·å»Šå’–å®¤é¾�";
 		String temp = null;
 		try {
 
@@ -3518,7 +5416,7 @@ http://www.uat.lanecrawford.com/sitemapLibraryVideoArticle.xml
 
 		String ruleId = "testing4";
 		String ruleDesc = "testing_true";
-		String ruleDescChi = "test富東店儷廊咖室龍";
+		String ruleDescChi = "testå¯Œæ�±åº—å„·å»Šå’–å®¤é¾�";
 		String temp = null;
 		try {
 			dbConnection = getDBConnection();
@@ -4386,7 +6284,7 @@ http://www.uat.lanecrawford.com/sitemapLibraryVideoArticle.xml
 	}
 
 	private static void substring() {
-		String test = "æŠ½åˆ°ä½¢åœ°çœŸä¿‚u";
+		String test = "Ã¦Å Â½Ã¥Ë†Â°Ã¤Â½Â¢Ã¥Å“Â°Ã§Å“Å¸Ã¤Â¿â€šu";
 		System.out.println("test=" + test);
 		int limit = 3;
 		List<String> ret = null;
@@ -4491,8 +6389,8 @@ http://www.uat.lanecrawford.com/sitemapLibraryVideoArticle.xml
 		 * proc.setString(9, fraudCheckContent); }
 		 */
 		// String test =
-		// "æŠ½åˆ°ä½¢åœ°çœŸä¿‚unluckyï¼ŒçœŸä¿‚æ“ºå‡ºåšŸå�ˆè‚‰é…¸ï¼ŒæŽ‰å’—ä½¢åœ°å�ˆæµªè²»ï¼Œä½ æ•™æˆ‘é»žè™•ç½®";
-		String test = "æŠ½åˆ°ä½¢åœ°çœŸä¿‚u";
+		// "Ã¦Å Â½Ã¥Ë†Â°Ã¤Â½Â¢Ã¥Å“Â°Ã§Å“Å¸Ã¤Â¿â€šunluckyÃ¯Â¼Å’Ã§Å“Å¸Ã¤Â¿â€šÃ¦â€œÂºÃ¥â€¡ÂºÃ¥Å¡Å¸Ã¥ï¿½Ë†Ã¨â€šâ€°Ã©â€¦Â¸Ã¯Â¼Å’Ã¦Å½â€°Ã¥â€™â€”Ã¤Â½Â¢Ã¥Å“Â°Ã¥ï¿½Ë†Ã¦ÂµÂªÃ¨Â²Â»Ã¯Â¼Å’Ã¤Â½Â Ã¦â€¢â„¢Ã¦Ë†â€˜Ã©Â»Å¾Ã¨â„¢â€¢Ã§Â½Â®";
+		String test = "Ã¦Å Â½Ã¥Ë†Â°Ã¤Â½Â¢Ã¥Å“Â°Ã§Å“Å¸Ã¤Â¿â€šu";
 		System.out.println("test=" + test);
 		System.out.println("test.length()=" + test.length());
 		try {
